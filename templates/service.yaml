@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "explorer.fullname" . }}
+  labels:
+    app: {{ template "explorer.name" . }}
+    chart: {{ template "explorer.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    app: {{ template "explorer.name" . }}
+    release: {{ .Release.Name }}
+  clusterIP: None
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP

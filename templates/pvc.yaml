@@ -1,0 +1,18 @@
+{{- if .Values.persistence.enabled -}}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ template "explorer.fullname" . }}
+  labels:
+    app: {{ template "explorer.fullname" . }}
+    chart: {{ template "explorer.chart" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.explorer.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.explorer.size | quote }}
+  {{ include "explorer.storageClass" . }}
+{{- end -}}

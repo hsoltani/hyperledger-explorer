@@ -1,0 +1,56 @@
+
+ explorer:
+  image:
+    repository: hyperledger/explorer
+    tag: latest
+  
+  service:
+    ## PosgresSQL service type
+    ##
+    type: ClusterIP
+    # clusterIP: None
+    port: 8080  
+
+
+
+
+  persistence:
+    enabled: true
+    explorer:
+    ## traefik data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 8Gi
+explorerdb:
+  image:
+    repository: hyperledger/explorer-db
+    tag: latest
+
+
+
+  service:
+    ## PosgresSQL service type
+    ##
+    type: ClusterIP
+    # clusterIP: None
+    port: 5432
+  persistence:
+    enabled: true
+    explorerdb:
+    ## traefik data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    # storageClass: "-"
+      accessMode: ReadWriteOnce
+      size: 8Gi
+

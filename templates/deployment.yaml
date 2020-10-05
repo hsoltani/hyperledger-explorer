@@ -1,0 +1,72 @@
+apiVersion: {{ template "explorer.deployment.apiVersion" . }}
+kind: Deployment
+metadata:
+  name: {{ template "explorer.fullname" . }}
+  labels:
+    app: {{ template "explorer.name" . }}
+    chart: {{ template "explorer.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "explorer.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "explorer.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: explorer
+        image: {{ .Values.explorer.image.repository }}:{{ .Values.explorer.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        args:
+     ##   - sh -c "node /opt/explorer/main.js && tail -f /dev/null"
+        command: [sh -c "node /blockchain-explorer-master/main.js && tail -f /dev/null"]
+        
+        env:
+          - name: DATABASE_HOST
+            value: explorerdb
+          - name: DATABASE_DATABASE
+            value: fabricexplorer
+          - name: DATABASE_USERNAME
+            value: hppoc
+          - name: DATABASE_PASSWD
+            value: password
+          - name: LOG_LEVEL_APP
+            value: debug
+          - name: LOG_LEVEL_DB
+            value: debug
+          - name: LOG_LEVEL_CONSOLE
+            value: info
+          - name: LOG_CONSOLE_STDOUT
+            value: "true"
+          - name: DISCOVERY_AS_LOCALHOST
+            value: "false"
+          
+        volumeMounts:
+        - name: explorer-data
+          mountPath: /data
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        
+     ## volumes:
+     ## - name: data
+     ##   emptyDir: {}
+      volumes:
+        - name: explorer-data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ template "explorer.fullname" . }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}

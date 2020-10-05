@@ -1,0 +1,65 @@
+apiVersion: {{ template "explorerdb.deployment.apiVersion" . }}
+kind: StatefulSet
+metadata:
+  name: {{ template "explorerdb.fullname" . }}
+  labels:
+    app: {{ template "explorerdb.name" . }}
+    chart: {{ template "explorerdb.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "explorerdb.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "explorerdb.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: explorerdb
+        image: {{ .Values.explorerdb.image.repository }}:{{ .Values.explorerdb.image.tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        
+        
+        env:
+          - name: DATABASE_DATABASE
+            value: fabricexplorer
+          - name: DATABASE_USERNAME
+            value: hppoc
+          - name: DATABASE_PASSWD
+            value: password
+          
+          
+        volumeMounts:
+          {{- if or (.Files.Glob "files/docker-entrypoint-initdb.d/*.{sh,sql,sql.gz}") .Values.initdbScriptsConfigMap .Values.initdbScripts }}
+            - name: custom-init-scripts
+              mountPath: /docker-entrypoint-initdb.d/
+              subPath: createdb.sh
+          {{- end }}
+        ##- name: pgdata
+         ## mountPath: /var/lib/postgresql/data
+         ## subPath: postgres
+        ports:
+        - name: http
+          containerPort: 5432
+          protocol: TCP
+        
+     ## volumes:
+     ## - name: data
+     ##   emptyDir: {}
+      volumes:
+        - name: custom-init-scripts
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ template "explorerdb.fullname" . }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
